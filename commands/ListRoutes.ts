@@ -7,8 +7,6 @@
  * file that was distributed with this source code.
  */
 
-import Table from 'cli-table3'
-import { inject } from '@adonisjs/fold'
 import { BaseCommand, flags } from '@adonisjs/ace'
 import type { RouterContract, RouteNode } from '@ioc:Adonis/Core/Route'
 
@@ -87,11 +85,7 @@ export default class ListRoutes extends BaseCommand {
 	 * Output routes a table string
 	 */
 	private outputTable(router: RouterContract) {
-		const table = new Table({
-			head: ['Route', 'Handler', 'Middleware', 'Name', 'Domain'].map((col) =>
-				this.colors.cyan(col)
-			),
-		})
+		const table = this.ui.table().head(['Route', 'Handler', 'Middleware', 'Name', 'Domain'])
 
 		this.outputJSON(router).forEach((route) => {
 			const row = [
@@ -101,10 +95,10 @@ export default class ListRoutes extends BaseCommand {
 				route.name,
 				route.domain,
 			]
-			table.push(row as any)
+			table.row(row)
 		})
 
-		return table.toString()
+		table.render()
 	}
 
 	/**
@@ -118,12 +112,18 @@ export default class ListRoutes extends BaseCommand {
 		}
 	}
 
-	@inject(['Adonis/Core/Route'])
-	public async run(router: RouterContract) {
+	public async run() {
+		const Router = this.application.container.use('Adonis/Core/Route')
+
+		/**
+		 * Commit routes before we can read them
+		 */
+		Router.commit()
+
 		if (this.json) {
-			this.log(JSON.stringify(this.outputJSON(router), null, 2))
+			this.log(JSON.stringify(this.outputJSON(Router), null, 2))
 		} else {
-			this.log(this.outputTable(router))
+			this.outputTable(Router)
 		}
 	}
 }

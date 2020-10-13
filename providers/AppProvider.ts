@@ -15,6 +15,12 @@ import { ApplicationContract } from '@ioc:Adonis/Core/Application'
  */
 export default class AppProvider {
 	constructor(protected app: ApplicationContract) {}
+	public static needsApplication = true
+
+	/**
+	 * Find if web or test environment
+	 */
+	private isWebOrTestEnvironment = ['web', 'test'].includes(this.app.environment)
 
 	/**
 	 * Additional providers to load
@@ -53,6 +59,14 @@ export default class AppProvider {
 	 */
 	protected registerCorsHook() {
 		/**
+		 * Do not register hooks when not running in web
+		 * environment
+		 */
+		if (!this.isWebOrTestEnvironment) {
+			return
+		}
+
+		/**
 		 * Register the cors before hook with the server
 		 */
 		this.app.container.with(['Adonis/Core/Config', 'Adonis/Core/Server'], (Config, Server) => {
@@ -71,6 +85,14 @@ export default class AppProvider {
 	 * Lazy initialize the static assets hook, if enabled inside the config
 	 */
 	protected registerStaticAssetsHook() {
+		/**
+		 * Do not register hooks when not running in web
+		 * environment
+		 */
+		if (!this.isWebOrTestEnvironment) {
+			return
+		}
+
 		/**
 		 * Register the cors before hook with the server
 		 */
@@ -93,9 +115,38 @@ export default class AppProvider {
 	 * Registers base health checkers
 	 */
 	protected registerHealthCheckers() {
+		/**
+		 * Do not register hooks when not running in web
+		 * environment
+		 */
+		if (!this.isWebOrTestEnvironment) {
+			return
+		}
+
 		this.app.container.with(['Adonis/Core/HealthCheck'], (healthCheck) => {
 			require('../src/HealthCheck/Checkers/Env').default(healthCheck)
 			require('../src/HealthCheck/Checkers/AppKey').default(healthCheck)
+		})
+	}
+
+	/**
+	 * Define repl bindings
+	 */
+	protected defineReplBindings() {
+		/**
+		 * Do not register repl bindings when not running in "repl"
+		 * environment
+		 */
+		if (this.app.environment !== 'repl') {
+			return
+		}
+
+		/**
+		 * Define REPL bindings
+		 */
+		this.app.container.with(['Adonis/Addons/Repl'], (Repl) => {
+			const { defineReplBindings } = require('../src/Bindings/Repl')
+			defineReplBindings(this.app, Repl)
 		})
 	}
 
@@ -114,5 +165,6 @@ export default class AppProvider {
 		this.registerCorsHook()
 		this.registerStaticAssetsHook()
 		this.registerHealthCheckers()
+		this.defineReplBindings()
 	}
 }

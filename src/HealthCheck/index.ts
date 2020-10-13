@@ -27,7 +27,7 @@ export class HealthCheck implements HealthCheckContract {
 	private healthCheckers: { [service: string]: Checker } = {}
 
 	/**
-	 * Reference to IoC container to resolve health checkers
+	 * Reference to the IoC container to resolve health checkers
 	 */
 	private resolver = this.application.container.getResolver('report')
 
@@ -88,11 +88,10 @@ export class HealthCheck implements HealthCheckContract {
 	}
 
 	/**
-	 * Ensure that application is ready and is not shutting
-	 * down. This relies on the application module.
+	 * Ensure that application is ready. This relies on the application module.
 	 */
 	public isReady() {
-		return this.application.isReady && !this.application.isShuttingDown
+		return this.application.isReady
 	}
 
 	/**

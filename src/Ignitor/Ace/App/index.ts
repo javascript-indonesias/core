@@ -8,13 +8,13 @@
  */
 
 import { join } from 'path'
-import { exists } from 'fs'
-import { sticker } from '@poppinss/cliui'
+import { resolveFrom } from '@poppinss/utils'
+import { sticker, logger } from '@poppinss/cliui'
 import { Application } from '@adonisjs/application'
 import { Kernel, ManifestLoader } from '@adonisjs/ace'
 
 import { ErrorHandler } from '../ErrorHandler'
-import { AceRuntimeException } from '../Exceptions'
+import { registerTsHook } from '../../../utils'
 import { SignalsListener } from '../../SignalsListener'
 
 import {
@@ -24,11 +24,43 @@ import {
 } from '@adonisjs/ace/build/src/Contracts'
 
 /**
+ * A local list of assembler commands. We need this, so that when assembler
+ * is not installed (probably in production) and someone is trying to
+ * build the project by running `serve` or `build`, we should give
+ * them a better descriptive error.
+ *
+ * Also, do note that at times this list will be stale, but we get it back
+ * in sync over time.
+ */
+const ASSEMBLER_COMMANDS = [
+	'build',
+	'serve',
+	'invoke',
+	'make:command',
+	'make:controller',
+	'make:exception',
+	'make:listener',
+	'make:middleware',
+	'make:prldfile',
+	'make:provider',
+	'make:validator',
+	'make:view',
+]
+
+/**
  * Exposes the API to execute app commands registered under
  * the manifest file.
  */
 export class App {
 	private commandName: string
+
+	/**
+	 * Returns a boolean if mentioned command is an assembler
+	 * command
+	 */
+	private get isAssemblerCommand() {
+		return ASSEMBLER_COMMANDS.includes(this.commandName)
+	}
 
 	/**
 	 * A boolean to know if we should force exit the
@@ -59,6 +91,11 @@ export class App {
 	private kernel = new Kernel(this.application)
 
 	/**
+	 * Find if TS hook has been registered or not
+	 */
+	private registeredTsHook: boolean = false
+
+	/**
 	 * Source root always points to the compiled source
 	 * code.
 	 */
@@ -79,14 +116,26 @@ export class App {
 	/**
 	 * Print framework version
 	 */
-	private printVersion(): never {
+	private printVersion(value?: any) {
+		if (!value) {
+			return
+		}
+
 		const appVersion = this.application.version
 		const adonisVersion = this.application.adonisVersion
 
+		let assemblerVersion = 'Not Installed'
+		try {
+			assemblerVersion = require(resolveFrom(this.appRoot, '@adonisjs/assembler/package.json'))
+				.version
+		} catch (error) {}
+
 		sticker()
-			.add('node ace --version')
-			.add(`App version ${appVersion ? appVersion.version : 'NA'}`)
-			.add(`Framework version ${adonisVersion ? adonisVersion.version : 'NA'}`)
+			.heading('node ace --version')
+			.add(`App version: ${logger.colors.cyan(appVersion ? appVersion.version : 'NA')}`)
+			.add(`Framework version: ${logger.colors.cyan(adonisVersion ? adonisVersion.version : 'NA')}`)
+			.add(`Assembler version: ${logger.colors.cyan(assemblerVersion)}`)
+			.render()
 
 		process.exit(0)
 	}
@@ -96,15 +145,34 @@ export class App {
 	 * disk
 	 */
 	private async onFind(command: SerializedCommand | null) {
-		if (this.wired) {
+		if (!command) {
 			return
 		}
 
-		if (!command || !command.settings.loadApp) {
-			return
+		/**
+		 * Register ts hook when
+		 *
+		 * - Haven't registered it already
+		 * - Is a typescript project
+		 * - Is not an assembler command
+		 */
+		if (!this.registeredTsHook && this.application.rcFile.typescript && !this.isAssemblerCommand) {
+			registerTsHook(this.application.appRoot)
+			this.registeredTsHook = true
 		}
 
-		await this.wire()
+		/**
+		 * Wire application if not wired and "loadApp" is true
+		 */
+		if (!this.wired && command.settings.loadApp) {
+			/**
+			 * Switch environment before wiring the app
+			 */
+			if (command.settings.environment) {
+				this.application.switchEnvironment(command.settings.environment)
+			}
+			await this.wire()
+		}
 	}
 
 	/**
@@ -167,16 +235,7 @@ export class App {
 		/**
 		 * Showing app and AdonisJs version
 		 */
-		this.kernel.flag(
-			'version',
-			async (value) => {
-				if (!value) {
-					return
-				}
-				this.printVersion()
-			},
-			{ alias: 'v' }
-		)
+		this.kernel.flag('version', async (value) => this.printVersion(value), { alias: 'v' })
 	}
 
 	/**
@@ -199,23 +258,42 @@ export class App {
 	}
 
 	/**
-	 * Raises human friendly error when the `ace-manifest` file
-	 * missing during `generate:manifest` command.
+	 * Returns manifest details for assembler
 	 */
-	private ensureManifestFile() {
-		return new Promise((resolve, reject) => {
-			exists(join(this.appRoot, 'ace-manifest.json'), (hasFile) => {
-				if (!hasFile) {
-					reject(
-						new AceRuntimeException(
-							`Run "node ace generate:manifest" before running any other ace commands`
-						)
-					)
-				} else {
-					resolve()
-				}
-			})
-		})
+	private getAssemblerManifest() {
+		try {
+			const manifestAbsPath = resolveFrom(
+				this.application.appRoot,
+				'@adonisjs/assembler/build/ace-manifest.json'
+			)
+			const basePath = join(manifestAbsPath, '../')
+			return [
+				{
+					manifestAbsPath,
+					basePath,
+				},
+			]
+		} catch (error) {
+			return []
+		}
+	}
+
+	/**
+	 * Returns manifest details for app
+	 */
+	private getAppManifest() {
+		try {
+			const manifestAbsPath = resolveFrom(this.application.appRoot, './ace-manifest.json')
+			const basePath = this.application.appRoot
+			return [
+				{
+					manifestAbsPath,
+					basePath,
+				},
+			]
+		} catch (error) {
+			return []
+		}
 	}
 
 	/**
@@ -223,18 +301,11 @@ export class App {
 	 */
 	public async handle(argv: string[]) {
 		try {
-			await this.ensureManifestFile()
-
 			/**
 			 * Manifest files to load
 			 */
 			this.kernel.useManifest(
-				new ManifestLoader([
-					{
-						basePath: this.appRoot,
-						manifestAbsPath: join(this.appRoot, 'ace-manifest.json'),
-					},
-				])
+				new ManifestLoader(this.getAssemblerManifest().concat(this.getAppManifest()))
 			)
 
 			/**

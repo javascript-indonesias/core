@@ -12,6 +12,7 @@ import { ManifestGenerator } from '@adonisjs/ace'
 import { Application } from '@adonisjs/application'
 
 import { ErrorHandler } from '../ErrorHandler'
+import { registerTsHook } from '../../../utils'
 import { AceRuntimeException } from '../Exceptions'
 
 /**
@@ -46,6 +47,13 @@ export class GenerateManifest {
 	 */
 	public async handle() {
 		try {
+			/**
+			 * Register ts hook when running typescript code directly
+			 */
+			if (this.application.rcFile.typescript) {
+				registerTsHook(this.application.appRoot)
+			}
+
 			const commands = this.application.rcFile.commands
 
 			/**
@@ -54,11 +62,24 @@ export class GenerateManifest {
 			 * the application is not booted and hence top level IoC container
 			 * imports will break
 			 */
-			this.application.container.onLookupFailed = () => {
-				throw new AceRuntimeException(
-					'Top level IoC container imports are not allowed in commands. Read more https://preview.adonisjs.com/guides/ace/introduction'
-				)
-			}
+			this.application.container.trap((namespace) => {
+				if (namespace === 'Adonis/Core/Application') {
+					return this.application
+				}
+
+				return {
+					__esModule: new Proxy(
+						{ namespace },
+						{
+							get(target) {
+								throw new AceRuntimeException(
+									`Top level import for module "${target.namespace}" is not allowed in commands. Learn more https://preview.adonisjs.com/guides/ace/introduction`
+								)
+							},
+						}
+					),
+				}
+			})
 
 			await new ManifestGenerator(this.appRoot, commands).generate()
 			logger.action('create').succeeded('ace-manifest.json file')
