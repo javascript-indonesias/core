@@ -17,11 +17,7 @@ import { ErrorHandler } from '../ErrorHandler'
 import { registerTsHook } from '../../../utils'
 import { SignalsListener } from '../../SignalsListener'
 
-import {
-	CommandContract,
-	SerializedCommand,
-	CommandConstructorContract,
-} from '@adonisjs/ace/build/src/Contracts'
+import { SerializedCommand } from '@adonisjs/ace/build/src/Contracts'
 
 /**
  * A local list of assembler commands. We need this, so that when assembler
@@ -63,22 +59,10 @@ export class App {
 	}
 
 	/**
-	 * A boolean to know if we should force exit the
-	 * process or not. Check [afterRun] method to
-	 * know when it is toggled to true
-	 */
-	private forceExit: boolean = false
-
-	/**
 	 * Whether or not the app was wired. App is only wired, when
 	 * loadApp inside the command setting is true.
 	 */
 	private wired = false
-
-	/**
-	 * Signals listener to listen for exit signals and kill command
-	 */
-	private signalsListener = new SignalsListener()
 
 	/**
 	 * Reference to the application
@@ -89,6 +73,11 @@ export class App {
 	 * Reference to the ace kernel
 	 */
 	private kernel = new Kernel(this.application)
+
+	/**
+	 * Signals listener to listen for exit signals and kill command
+	 */
+	private signalsListener = new SignalsListener(this.application)
 
 	/**
 	 * Find if TS hook has been registered or not
@@ -185,40 +174,12 @@ export class App {
 	}
 
 	/**
-	 * Invoked command has been ran
-	 */
-	private async afterRun(command: CommandContract) {
-		const commandConstructor = command.constructor as CommandConstructorContract
-
-		/**
-		 * Do not exit when the hook is not executed for the main
-		 * command
-		 */
-		if (this.commandName !== commandConstructor.commandName) {
-			return
-		}
-
-		/**
-		 * Do not exit when the command is meant to stayalive
-		 */
-		if (commandConstructor.settings?.stayAlive) {
-			return
-		}
-
-		/**
-		 * Exit command
-		 */
-		this.forceExit = true
-	}
-
-	/**
 	 * Hooks into kernel lifecycle events to conditionally
 	 * load the app.
 	 */
 	private addKernelHooks() {
 		this.kernel.before('find', async (command) => this.onFind(command))
 		this.kernel.before('run', async () => this.onRun())
-		this.kernel.after('run', (command) => this.afterRun(command))
 	}
 
 	/**
@@ -328,7 +289,8 @@ export class App {
 			 * Print help when no arguments have been passed
 			 */
 			if (!argv.length) {
-				this.printHelp()
+				this.printHelp(true)
+				return
 			}
 
 			/**
@@ -348,17 +310,22 @@ export class App {
 			})
 
 			/**
+			 * Listen for the exit signal on ace kernel
+			 */
+			this.kernel.onExit(async () => {
+				if (this.kernel.error) {
+					await new ErrorHandler(this.application).handleError(this.kernel.error)
+				}
+
+				process.exit(this.kernel.exitCode)
+			})
+
+			/**
 			 * Handle command
 			 */
 			await this.kernel.handle(argv)
-			if (this.forceExit) {
-				process.exit(0)
-			}
 		} catch (error) {
-			await new ErrorHandler(this.application).handleError(error)
-			if (this.forceExit) {
-				process.exit(1)
-			}
+			new ErrorHandler(this.application).handleError(error).finally(() => process.exit(1))
 		}
 	}
 }
