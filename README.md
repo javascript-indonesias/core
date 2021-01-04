@@ -6,6 +6,19 @@
 <hr>
 
 <div align="center">
+  <h3> Sponsored by </h3>
+  
+  <p>FOSS United is a non-profit foundation that aims at promoting and strengthening the Free and Open Source Software (FOSS) ecosystem in India.</p>
+
+
+  [![FOSSUnited](http://fossunited.org/files/fossunited-badge.svg)](https://fossunited.org/)
+
+</div>
+
+<br />
+<hr>
+
+<div align="center">
   <h3>
     <a href="https://www.patreon.com/adonisframework">
       Patreon Supporters
@@ -26,6 +39,10 @@
   	<img src="assets/yung-silva.png" width="100px">
   </a>
 
+  <a href="https://www.patreon.com/monace" title="Into music? Support Monace">
+  	<img src="assets/monace.jpg" width="100px">
+  </a>
+
   <a href="" title="Bastien Crettenand">
   	<img src="assets/bastien-crettenand.png" width="100px">
   </a>
@@ -38,8 +55,8 @@
   	<img src="assets/mc-sneaky.png" width="100px">
   </a>
 
-  <a href="" title="Sameer">
-  	<img src="assets/sameer.png" width="100px">
+  <a href="https://appmasters.io" title="Expert in software development for small and medium sized companies">
+  	<img src="assets/appmasters.jpg" width="100px">
   </a>
 </div>
 
