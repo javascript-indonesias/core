@@ -55,6 +55,17 @@ export default class AppProvider {
   }
 
   /**
+   * Registering the assets manager
+   */
+  protected registerAssetsManager() {
+    this.app.container.singleton('Adonis/Core/AssetsManager', () => {
+      const { AssetsManager } = require('../src/AssetsManager')
+      const config = this.app.container.resolveBinding('Adonis/Core/Config').get('app.assets', {})
+      return new AssetsManager(config, this.app)
+    })
+  }
+
+  /**
    * Lazy initialize the cors hook, if enabled inside the config
    */
   protected registerCorsHook() {
@@ -77,7 +88,7 @@ export default class AppProvider {
           return
         }
 
-        const Cors = require('../src/Hooks/Cors').Cors
+        const { Cors } = require('../src/Hooks/Cors')
         const cors = new Cors(config)
         Server.hooks.before(cors.handle.bind(cors))
       }
@@ -159,6 +170,7 @@ export default class AppProvider {
   public register() {
     this.registerHttpExceptionHandler()
     this.registerHealthCheck()
+    this.registerAssetsManager()
   }
 
   /**
