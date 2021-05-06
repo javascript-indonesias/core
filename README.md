@@ -58,6 +58,14 @@
   <a href="https://appmasters.io" title="Expert in software development for small and medium sized companies">
   	<img src="assets/appmasters.jpg" width="100px">
   </a>
+
+  <a href="https://ably.com/?utm_source=adonisjs" title="Build realtime features you can trust to deliver at scale">
+  	<img src="assets/ably.jpeg" width="100px">
+  </a>
+
+  <a href="http://repzo.com/" title="Smartest CRM / SFA for your field teams powered by Blockchain">
+  	<img src="assets/repzo.jpeg" width="100px">
+  </a>
 </div>
 
 <hr>
@@ -84,7 +92,7 @@
       Website
     </a>
     <span> | </span>
-    <a href="https://adonisjs.com/docs">
+    <a href="https://docs.adonisjs.com">
       Guides
     </a>
     <span> | </span>
@@ -104,8 +112,8 @@
 [circleci-image]: https://img.shields.io/circleci/project/github/adonisjs/core/master.svg?style=for-the-badge&logo=circleci
 [circleci-url]: https://circleci.com/gh/adonisjs/core "circleci"
 
-[npm-image]: https://img.shields.io/npm/v/@adonisjs/core/alpha.svg?style=for-the-badge&logo=npm
-[npm-url]: https://www.npmjs.com/package/@adonisjs/core/v/alpha "npm"
+[npm-image]: https://img.shields.io/npm/v/@adonisjs/core/latest.svg?style=for-the-badge&logo=npm
+[npm-url]: https://www.npmjs.com/package/@adonisjs/core/v/latest "npm"
 
 [typescript-image]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 
