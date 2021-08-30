@@ -20,10 +20,6 @@
     <img src="assets/cleavr.png" width="100px">
   </a>
 
-  <a href="https://bootcamp.cataline.io/?video=adonis&utm_source=adonisjs" title="Cataline">
-    <img src="assets/cataline.png" width="100px">
-  </a>
-
   <a href="https://ably.com/?utm_source=adonisjs" title="Build realtime features you can trust to deliver at scale">
     <img src="assets/ably.jpeg" width="100px">
   </a>
@@ -40,20 +36,12 @@
 <div align="center">
   <h3>
     <a href="https://www.patreon.com/adonisframework">
-      Individual Supporters
+      Patreon Supporters
     </a>
   </h3>
 
-  <a href="https://www.patreon.com/monace" title="Into music? Support Monace">
-  	<img src="assets/monace.jpg" width="100px">
-  </a>
-
   <a title="Bastien Crettenand">
   	<img src="assets/bastien-crettenand.png" width="100px">
-  </a>
-
-  <a href="https://thebrowser.company/" title="The Browser Company">
-    <img src="assets/browser-company.png" width="100px">
   </a>
 
   <a href="https://github.com/olaoluwa-98" title="Emmanuel Awotunde">
@@ -71,6 +59,10 @@
   <a href="http://repzo.com?utm_source=adonisjs" title="Smartest CRM / SFA for your field teams powered by Blockchain">
   	<img src="assets/repzo.jpeg" width="100px">
   </a>
+
+  <a href="https://doconchain.com/?utm_source=adonisjs.com" title="Boost your business today with doconchain.com">
+    <img src="assets/doconchain.jpeg" width="100px">
+  </a>
 </div>
 
 <hr>
@@ -87,7 +79,7 @@
 
 <div align="center">
 
-[![gh-workflow-image]][gh-workflow-url] [![npm-image]][npm-url] ![][typescript-image] [![license-image]][license-url] [![synk-image]][synk-url]
+[![gh-workflow-image]][gh-workflow-url] [![npm-image]][npm-url] ![][typescript-image] [![license-image]][license-url] [![snyk-image]][snyk-url]
 
 </div>
 
@@ -122,5 +114,5 @@
 [license-url]: LICENSE.md
 [license-image]: https://img.shields.io/github/license/adonisjs/adonis-framework?style=for-the-badge
 
-[synk-image]: https://img.shields.io/snyk/vulnerabilities/github/adonisjs/core?label=Synk%20Vulnerabilities&style=for-the-badge
-[synk-url]: https://snyk.io/test/github/adonisjs/core?targetFile=package.json "synk"
+[snyk-image]: https://img.shields.io/snyk/vulnerabilities/github/adonisjs/core?label=Snyk%20Vulnerabilities&style=for-the-badge
+[snyk-url]: https://snyk.io/test/github/adonisjs/core?targetFile=package.json "snyk"
