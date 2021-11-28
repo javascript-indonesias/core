@@ -12,11 +12,7 @@
     </a>
   </h3>
 
-  <a href="https://www.pivale.co/?utm_source=adonisjs" title="Barry Fisher">
-    <img src="assets/pivale.png" width="100px">
-  </a>
-
-  <a href="https://cleaver.cloud/adonis/?utm_source=adonisjs" title="Cleaver">
+  <a href="https://cleavr.io/adonis/?utm_source=adonisjs" title="Cleaver">
     <img src="assets/cleavr.png" width="100px">
   </a>
 
@@ -62,6 +58,14 @@
 
   <a href="https://doconchain.com/?utm_source=adonisjs.com" title="Boost your business today with doconchain.com">
     <img src="assets/doconchain.jpeg" width="100px">
+  </a>
+
+  <a href="https://bitkidd.dev/?utm_source=adonisjs.com" title="Chirill Ceban">
+    <img src="assets/bitkidd.jpeg" width="100px">
+  </a>
+
+  <a href="https://github.com/usagar80/?utm_source=adonisjs.com" title="Sagar Upadhyay">
+    <img src="assets/usagar80.jpeg" width="100px">
   </a>
 </div>
 
