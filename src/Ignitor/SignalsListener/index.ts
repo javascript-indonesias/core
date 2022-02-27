@@ -21,7 +21,12 @@ export class SignalsListener {
    */
   private kill = async function () {
     try {
-      await this.onCloseCallback()
+      await Promise.race([
+        this.onCloseCallback(),
+        new Promise((resolve) => {
+          setTimeout(resolve, 3000)
+        }),
+      ])
       process.exit(0)
     } catch (error) {
       process.exit(1)
@@ -36,23 +41,20 @@ export class SignalsListener {
    */
   public listen(callback: () => Promise<void>) {
     this.onCloseCallback = callback
-    if (process.env.pm_id) {
-      process.once('SIGINT', this.kill)
-    }
-
-    process.once('SIGTERM', this.kill)
 
     /**
-     * Cleanup on uncaught exceptions.
+     * Close on SIGINT AND SIGTERM SIGNALS
      */
-    process.once('uncaughtException', (error) => {
-      if (this.application.environment === 'repl') {
-        this.application.logger.fatal(error, '"uncaughtException" detected')
-        return
-      }
+    if (process.env.pm_id) {
+      process.on('SIGINT', this.kill)
+    }
+    process.on('SIGTERM', this.kill)
 
-      this.application.logger.fatal(error, '"uncaughtException" detected. Process will shutdown')
-      process.exit(1)
+    /**
+     * Notify about uncaught exceptions
+     */
+    process.on('uncaughtExceptionMonitor', (error) => {
+      this.application.logger.fatal(error, '"uncaughtException" detected')
     })
   }
 
