@@ -7,8 +7,5 @@
  * file that was distributed with this source code.
  */
 
-export default [
-  '@adonisjs/core/build/commands/DumpRc.js',
-  '@adonisjs/core/build/commands/ListRoutes/index',
-  '@adonisjs/core/build/commands/GenerateKey.js',
-]
+export { InferListFromConfig, hashConfig } from '@adonisjs/hash/build/config'
+export { InferDisksFromConfig, driveConfig } from '@adonisjs/drive/build/config'
