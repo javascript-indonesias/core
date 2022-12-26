@@ -27,9 +27,32 @@ export default hashConfig({
   | free to change the default value
   |
   */
-  default: Env.get('HASH_DRIVER', 'argon'),
+  default: Env.get('HASH_DRIVER', 'scrypt'),
 
   list: {
+    /*
+    |--------------------------------------------------------------------------
+    | scrypt
+    |--------------------------------------------------------------------------
+    |
+    | Scrypt mapping uses the Node.js inbuilt crypto module for creating
+    | hashes.
+    |
+    | We are using the default configuration recommended within the Node.js
+    | documentation.
+    | https://nodejs.org/api/crypto.html#cryptoscryptpassword-salt-keylen-options-callback
+    |
+    */
+    scrypt: {
+      driver: 'scrypt',
+      cost: 16384,
+      blockSize: 8,
+      parallelization: 1,
+      saltSize: 16,
+      keyLength: 64,
+      maxMemory: 32 * 1024 * 1024,
+    },
+
     /*
     |--------------------------------------------------------------------------
     | Argon
